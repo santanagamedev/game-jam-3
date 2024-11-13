@@ -13,13 +13,13 @@ public class PlayerController : MonoBehaviour
     [SerializeField] float jumpCooldownTime;
     private float holdTime = 0.0f;
     private bool isHolding = false;
-    private bool isOnGround;
-    private bool canJump;
+    public bool isOnGround;
+    public bool canJump;
 
     [Header("Gizmo")]
-    [SerializeField] private float detectorRadius;    
-    [SerializeField] private Transform detectorCenter;
-    [SerializeField] private LayerMask detectorLayer;
+    [SerializeField] private Vector2 detectorBox = new Vector2(1.0f, 0.1f);    
+    [SerializeField] private Transform detectorPosition;
+    [SerializeField] private LayerMask groundLayer;
     
 
     void Start()
@@ -39,7 +39,6 @@ public class PlayerController : MonoBehaviour
         if (Input.GetMouseButton(0) && isHolding)
         {
             holdTime += Time.deltaTime;
-            Debug.Log("Time Pressing Button: " + holdTime);
         }
 
         if (Input.GetMouseButtonUp(0) && canJump && isOnGround && isHolding && remainingJumps > 0)
@@ -47,13 +46,18 @@ public class PlayerController : MonoBehaviour
             StartCoroutine(Jump());  
             canJump = false;   
             remainingJumps --;
-            Debug.Log("Remaining Jumps: " + remainingJumps);
-        }
+        }             
+
+        if(remainingJumps < 1)
+        {
+            // GameOver()
+            Debug.Log("Game Over! No Remaining Juimps");
+        }   
     }
 
     void FixedUpdate()
     {
-        isOnGround = Physics2D.OverlapCircle(detectorCenter.transform.position, detectorRadius, detectorLayer);    
+        isOnGround = Physics2D.OverlapBox(detectorPosition.position, detectorBox, 0, groundLayer);           
     }
     
     IEnumerator Jump()
@@ -65,23 +69,53 @@ public class PlayerController : MonoBehaviour
 
         float t = Mathf.Clamp01(holdTime / maxHoldTtime);
         float jumpForce = Mathf.Lerp(minJumpForce, maxJumpForce, t); 
-        
-        Debug.Log("Jumo force: " + jumpForce);      
 
-        Vector2  clickPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);        
-        //Vector2 jumpDirection = (clickPosition - (Vector2)transform.position).normalized;
+        Vector2 clickPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         Vector2 jumpDirection = (clickPosition - playerRb.position).normalized;
 
-        playerRb.velocity = Vector2.zero; 
-        playerRb.AddForce(jumpDirection * jumpForce, ForceMode2D.Impulse);
+        ResetPhysics(); 
+        //playerRb.AddForce(jumpDirection * jumpForce, ForceMode2D.Impulse);
+        playerRb.velocity = jumpDirection * jumpForce;
 
         isOnGround = false;
         yield return new WaitForSeconds(jumpCooldownTime);
 
         canJump = true;
     }
-    private void OnDrawGizmos() {
-        Gizmos.color = Color.yellow;    
-        Gizmos.DrawWireSphere(detectorCenter.transform.position, detectorRadius);
+
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        if(other.gameObject.CompareTag("Goal"))
+        {
+            // NextLevel();
+            Debug.Log("Next Level");
+        }
+
+        if(other.gameObject.CompareTag("Obstacle"))
+        {
+            // GameOver();
+            Debug.Log("Game Over!");
+        }
+        
+        if(other.gameObject.CompareTag("PowerJump"))
+        {
+            remainingJumps ++;
+            other.gameObject.SetActive(false);  
+            Debug.Log("One Jumo Added");
+        }
+    }
+
+    void ResetPhysics()
+    {
+        playerRb.velocity = Vector2.zero;
+        playerRb.angularVelocity = 0;
+
+    }
+    
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireCube(detectorPosition.position, detectorBox);
+        
     }
 }

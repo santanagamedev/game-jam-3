@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 7814658854550896758}
   m_Layer: 0
   m_Name: small_spikes
-  m_TagString: Untagged
+  m_TagString: PowerJump
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

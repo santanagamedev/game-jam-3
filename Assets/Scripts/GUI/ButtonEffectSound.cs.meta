@@ -1,0 +1,13 @@
+fileFormatVersion: 2
+guid: 4c1a29d8815ec6e4cbc0b9e7f32863b8
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - audioSource: {instanceID: 0}
+  - overSound: {fileID: 8300000, guid: 64f8764931ea0e74c8c8728ff5755622, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

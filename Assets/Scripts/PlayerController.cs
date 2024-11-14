@@ -9,7 +9,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] float minJumpForce;
     [SerializeField] float maxJumpForce;
     [SerializeField] float maxHoldTtime;    
-    [SerializeField] float remainingJumps;
+    public int remainingJumps;
     [SerializeField] float jumpCooldownTime;
     private float holdTime = 0.0f;
     private bool isHolding = false;
@@ -20,37 +20,48 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private Vector2 detectorBox = new Vector2(1.0f, 0.1f);    
     [SerializeField] private Transform detectorPosition;
     [SerializeField] private LayerMask groundLayer;
+
+    [Header("Audio")]
+    [SerializeField] private PlayerSoundController playerSoundController;
+
+    private GameManager gameManager;
     
 
     void Start()
     {
+        gameManager = GameObject.Find("Game Manager").GetComponent<GameManager>();
+
+        gameManager.jumpsCounter = remainingJumps;
+
         playerRb = GetComponent<Rigidbody2D>();  
         canJump = true;
     }
 
     void Update()
     {        
-        if (Input.GetMouseButtonDown(0))
+        if (Input.GetMouseButtonDown(1))
         {
             isHolding = true;
             holdTime = 0.0f;
         }        
 
-        if (Input.GetMouseButton(0) && isHolding)
+        if (Input.GetMouseButton(1) && isHolding)
         {
             holdTime += Time.deltaTime;
         }
 
-        if (Input.GetMouseButtonUp(0) && canJump && isOnGround && isHolding && remainingJumps > 0)
+        if (Input.GetMouseButtonUp(1) && canJump && isOnGround && isHolding && remainingJumps > 0)
         {
+            playerSoundController.PlayJumpSound();
             StartCoroutine(Jump());  
-            canJump = false;   
-            remainingJumps --;
+            canJump = false;  
+            remainingJumps--;
+            gameManager.UpdateJumps(remainingJumps);
         }             
 
         if(remainingJumps < 1)
         {
-            // GameOver()
+            StartCoroutine(gameManager.RestarLevel("No Jumps"));
             Debug.Log("Game Over! No Remaining Juimps");
         }   
     }
@@ -93,12 +104,15 @@ public class PlayerController : MonoBehaviour
 
         if(other.gameObject.CompareTag("Obstacle"))
         {
-            // GameOver();
+            canJump = false;
+            playerSoundController.PlayDeadSound(gameObject);
+            StartCoroutine(gameManager.RestarLevel(other.gameObject.tag));
             Debug.Log("Game Over!");
         }
         
         if(other.gameObject.CompareTag("PowerJump"))
         {
+            playerSoundController.PlayReloadSound();
             remainingJumps ++;
             other.gameObject.SetActive(false);  
             Debug.Log("One Jumo Added");

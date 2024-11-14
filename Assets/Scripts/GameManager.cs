@@ -14,6 +14,7 @@ public class GameManager : MonoBehaviour
     public GameObject panelTutorial;
     void Start()
     {
+        
         playerJumpsCounter = GameObject.Find("Player").GetComponent<PlayerController>().remainingJumps; 
         
         jumpCounterText.text = "Saltos Disponibles: " + playerJumpsCounter;   

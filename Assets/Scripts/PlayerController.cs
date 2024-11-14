@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
+
     [Header("Jump")]  
     private Rigidbody2D playerRb;
     [SerializeField] float minJumpForce;
